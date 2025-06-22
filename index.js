@@ -118,6 +118,10 @@ io.on("connection", (socket) => {
   });
 });
 
+app.post("/logout", (req, res) => {
+  res.redirect("/");
+});
+
 server.listen(port, () => {
   console.log("Server running on port", port);
 });
