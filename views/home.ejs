@@ -1,32 +1,104 @@
 <%- include("partials/header.ejs", { page: "home" }) %>
-
+ 
 <div class="home-layout">
   <div class="home">
-    <h2>hello <%= user %></h2>
+    <h2>Hello <%= user.charAt(0).toUpperCase() + user.slice(1) %></h2>
    <form action="/logout" method="POST" class="floating-logout">
   <button type="submit">Logout</button>
 </form>
 
+<form method="POST" action="/post" class="post-form" enctype="multipart/form-data">
+  <div class="textarea-wrapper">
+    <textarea name="content" placeholder="What's flowing through your mind?" required></textarea>
 
-    <form method="POST" action="/post" class="post-form">
-      <textarea name="content" placeholder="What's flowing through your mind?" required></textarea>
-      <input type="hidden" name="user" value="<%= user %>">
-      <input type="submit" value="Post" />
-    </form>
+    <!-- Hidden file input -->
+    <input type="file" accept="image/*" name="image" id="fileInput">
+    <label for="fileInput" class="clip-icon">📎</label>
+  </div>
+  <span id="fileName" class="file-name-display"></span>
+  <input type="hidden" name="user" value="<%= user %>">
+  <input type="submit" value="Post" />
+</form>
+
 
     <h3>All Posts</h3>
     <% if (posts.length === 0) { %>
       <p>No posts yet.</p>
     <% } else { %>
-      <% posts.forEach(post => { %>
-        <div class="post">
-          <strong><%= post.username %>:</strong>
-          <p><%= post.content %></p>
-          <small><%= post.created_at.toLocaleString() %></small>
-        </div>
-        <hr />
-      <% }); %>
+    <% for (let i = 0; i < posts.length; i++) { %>
+     <% const post = posts[i] %>
+     <% let isliked = false %>
+     <% for (let j = 0; j < likes.length; j++) { %>
+       <% if (likes[j].id === post.id) { %>
+        <% isliked = true; %>
+        <% break; %>
+      <% } %>
     <% } %>
+  <div class="post">
+    <div class="n"><strong><%= post.username %>:</strong></div>
+
+    <% if (post.file) { %>
+      
+      <a href="/view-image/post/<%= post.id %>">
+        <img class="attachment" src="/files/<%= post.id %>" width="45%">
+      </a>
+
+    <% } %>
+      <p><%= post.content %></p>
+    <div class="like">
+      <form class="like-form" data-postid="<%= post.id %>" data-user="<%= user %>">
+        <button type="submit" class="like-btn"><%= isliked ? "❤️" : "🤍" %></button>
+        
+          <% let likeCount = 0;
+   for (let k = 0; k < count.length; k++) {
+     if (count[k].id === post.id) {
+       likeCount = count[k].total;
+       break;
+     }
+   }
+%>
+      <%
+  let like;
+  if (likeCount===0||1) {
+    like = "like";
+  } else {
+    like = "likes";
+  }
+%>
+
+      <span>
+      <details class="likes-dropdown">
+  <summary><%= likeCount %> <%= like %></summary>
+  <ul>
+  <% for (let l = 0; l < allLikes.length; l++) { %>
+    <% if (allLikes[l].id === post.id) { %>
+      <li data-username="<%= allLikes[l].username %>"><%= allLikes[l].username %></li>
+    <% } %>
+  <% } %>
+</ul>
+
+</details>
+</span>
+
+      </form>
+
+
+      <form action="comment" method="post">
+        <input type="hidden" name="postid" value="<%= post.id %>">
+        <input type="hidden" name="uploader" value="<%= post.username %>">
+        <input type="hidden" name="self" value="<%= user %>">
+        <input type="hidden" name="caption" value="<%= post.content %>">
+        <input type="submit" name="like" value="💬" class="like-btn">
+      </form>
+    </div>
+
+    
+    <small><%= post.created_at.toLocaleString() %></small>
+  </div>
+  <hr />
+<% } %>
+
+      <% }; %>
   </div>
 
   <div class="sidebar">
@@ -46,3 +118,57 @@
 
 
 <%- include("partials/footer.ejs") %>
+<script>
+  const fileInput = document.getElementById('fileInput');
+  const fileName = document.getElementById('fileName');
+
+  fileInput.addEventListener('change', () => {
+    fileName.textContent = fileInput.files.length > 0 ? fileInput.files[0].name : '';
+  });
+
+  document.querySelectorAll('.like-form').forEach(form => {
+    form.onsubmit = async e => {
+      e.preventDefault();
+
+      const btn = form.querySelector('button');
+      const postId = form.dataset.postid;
+      const user = form.dataset.user;
+      const liked = btn.textContent === '❤️';
+
+      const res = await fetch(liked ? '/dislike' : '/like', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: `id=${postId}&user=${user}`
+      });
+
+      if (res.ok) {
+        // Toggle heart
+        btn.textContent = liked ? '🤍' : '❤️';
+
+        // Update count in summary
+        const summary = form.querySelector('.likes-dropdown summary');
+        const text = summary.textContent.trim().split(' ');
+        let currentCount = parseInt(text[0]);
+        if (isNaN(currentCount)) currentCount = 0;
+        const newCount = liked ? currentCount - 1 : currentCount + 1;
+        const label = newCount === 1 ? "like" : "likes";
+        summary.textContent = `${newCount} ${label}`;
+
+        // Update names list
+        const list = form.querySelector('.likes-dropdown ul');
+
+        if (!liked) {
+          const li = document.createElement('li');
+          li.textContent = user;
+          li.dataset.username = user;
+          list.appendChild(li);
+        } else {
+          const items = list.querySelectorAll('li');
+          items.forEach(li => {
+            if (li.dataset.username === user) li.remove();
+          });
+        }
+      }
+    };
+  });
+</script>

@@ -259,7 +259,7 @@ footer {
   }
 
   .home {
-    max-height: 65vh;
+    /* max-height: 65vh; */
     overflow-y: auto;
   }
 
@@ -291,7 +291,7 @@ footer {
 
   /* Chat page refinements */
   .chat-container {
-    padding-bottom: 80px;
+    padding-bottom: 20px;
   }
 
   .back-button {
@@ -341,3 +341,220 @@ footer {
     background-color: #1976d2;
   }
 }
+.n{
+  margin-bottom: 10px;
+}
+.clip-icon {
+  cursor: pointer;
+  font-size: 24px;
+  margin-right: 10px;
+  user-select: none;
+}
+.textarea-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.post-form textarea {
+  width: 100%;
+  height: 100px;
+  padding: 10px;
+  padding-right: 45px;  /* enough space for icon */
+  padding-bottom: 35px; /* space for icon */
+  box-sizing: border-box;
+  resize: none;
+  font-size: 16px;
+}
+
+.clip-icon {
+  position: absolute;
+  bottom: 30px;
+  right: 0px;
+  font-size: 20px;
+  cursor: pointer;
+  user-select: none;
+  color: #555;
+  transition: transform 0.2s ease;
+}
+
+.clip-icon:hover {
+  transform: scale(1.2);
+}
+
+#fileInput {
+  display: none;
+}
+.attachment{
+  border-radius: 10px;
+}
+@media screen and (min-width: 769px) {
+  .floating-chat-bubble {
+    display: none;
+  }
+}
+.file-name-display {
+  display: block;
+  margin-top: 6px;
+  margin-left: 2px;
+  font-size: 0.85rem;
+  color: #555;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.hide{
+  display: none;
+}
+/* .like-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0;
+} */
+
+/* .like-btn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  outline: none;
+  font-family: inherit;
+  color: inherit;
+  line-height: 1;
+  display: inline;
+  width: auto;
+  height: auto;
+} */
+
+.like-btn:focus {
+  outline: none;
+}
+form {
+  display: inline;
+}
+
+/* .like-btn {
+  all: unset; /* Resets all styles to raw, like a <span> */
+  /* font-size: 22px;
+  cursor: pointer;
+  display: inline;
+  line-height: 1;
+  background: none;
+} */ 
+
+/* form {
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+
+.like-btn {
+  all: unset; /* Wipes out all default button styles */
+  /* font-size: 24px;
+  cursor: pointer;
+  display: inline;
+  line-height: 1;
+} */ 
+
+input.like-btn {
+  all: unset;
+  font-size: 22px;
+  cursor: pointer;
+  display: inline;
+  line-height: 1;
+  font-family: inherit;
+  color: inherit;
+  background-color: transparent !important;
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+}
+button.like-btn {
+  all: unset;
+  font-size: 22px;
+  cursor: pointer;
+  display: inline;
+  line-height: 1;
+  font-family: inherit;
+  color: inherit;
+  background-color: transparent !important;
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+}
+.likes-dropdown {
+  margin-top: 5px;
+  font-size: 0.9rem;
+}
+
+.likes-dropdown ul {
+  list-style-type: none;
+  padding-left: 1rem;
+  margin-top: 4px;
+}
+
+.likes-dropdown li {
+  padding: 2px 0;
+  color: #333;
+}
+/* .like {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap; /* Allows wrapping on small screens */
+/* } */ 
+.like {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.like form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.image-wrapper a{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* img.comment-image {
+  width: 1%;
+  max-width: 300px;
+  border-radius: 10px;
+  border: 5px solid red;
+} */
+.comment-image {
+  width: 30% !important;
+  max-width: 200px;
+  height: auto;
+
+}
+
+
+.attachment{ 
+  border-radius: 10px;
+  
+}
+
+
+

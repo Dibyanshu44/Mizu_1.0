@@ -1,0 +1,63 @@
+<%- include("partials/header.ejs") %>
+<a href="/home?user=<%= user %>" class="back-button">⬅ Back to Home</a>
+<div class="comment-page">
+<strong><%= uploader %>:</strong>
+<hr>
+<div class="image-wrapper">
+    <% if(hasImage){ %>
+    <a href="/view-image/post/<%= postid %>">
+        <img class="attachment" src="/files/<%= postid %>" width="20%" >
+    </a>
+    <% } %>
+    <p><%= caption %></p>
+</div>
+<form method="POST" action="/comment-post" class="post-form" enctype="multipart/form-data">
+  <div class="textarea-wrapper">
+    <textarea name="content" placeholder="Reply?" required></textarea>
+
+    <!-- Hidden file input -->
+    <input type="file" accept="image/*" name="image" id="fileInput">
+    <label for="fileInput" class="clip-icon">📎</label>
+  </div>
+  <span id="fileName" class="file-name-display"></span>
+  <input type="hidden" name="user" value="<%= user %>">
+  <input type="hidden" name="postid" value="<%= postid %>">
+  <input type="hidden" name="uploader" value="<%= uploader %>">
+  <input type="hidden" name="caption" value="<%= caption %>">
+  <input type="submit" value="Post" />
+</form>
+<h3>All Comments</h3>
+<% if (comments.length === 0) { %>
+  <p>No comments yet.</p>
+<% } else { %>
+<% for (let i = 0; i < comments.length; i++) { %>
+    <% const comment = comments[i] %>
+    <div class="post">
+        <div class="n"><strong><%= comment.username %>:</strong></div>
+            <% if (comment.file) { %>
+                
+                <a href="/view-image/comment/<%= comment.id %>">
+                    <img class="attachment comment-image" src="/comments/<%= comment.id %>" width="20%">
+                </a>
+
+            <% } %>
+            <p><%= comment.content %></p>
+    </div>
+        <hr />
+    <% } %>
+<% } %>
+<script>
+  const fileInput = document.getElementById("fileInput");
+  const fileNameDisplay = document.getElementById("fileName");
+
+  fileInput.addEventListener("change", function () {
+    if (fileInput.files.length > 0) {
+      const fileName = fileInput.files[0].name;
+      fileNameDisplay.textContent = `📎 ${fileName}`;
+    } else {
+      fileNameDisplay.textContent = "";
+    }
+  });
+</script>
+</div>
+<%- include("partials/footer.ejs") %>
