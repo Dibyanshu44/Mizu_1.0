@@ -7,7 +7,16 @@
 
   <ul class="message-thread" id="messages">
     <% messages.forEach(msg => { %>
-      <li><strong><%= msg.sender %>:</strong> <%= msg.content %> <small>(<%= new Date(msg.sent_at).toLocaleString("en-IN", {
+      <li><strong><%= msg.sender %>:</strong>
+      <% if (msg.file) { %>
+        <a href="/view-image/chat/<%= msg.id %>">
+          <br><img class="attachment" src="/chats/<%= msg.id %>" width="30%">
+        </a>
+        <div><%= msg.content %> </div>
+      <% }else{ %>
+        <%= msg.content %> 
+      <% } %>
+      <small>(<%= new Date(msg.sent_at).toLocaleString("en-IN", {
         hour: '2-digit',
         minute: '2-digit',
         day: '2-digit',
@@ -16,11 +25,18 @@
     <% }) %>
   </ul>
 
-  <form class="message-form" id="chatForm">
+  <form class="message-form" id="chatForm" enctype="multipart/form-data">
     <input type="hidden" id="sender" value="<%= user %>">
     <input type="hidden" id="receiver" value="<%= withUser %>">
-    <input type="text" id="msgInput" placeholder="Type a message..." required>
-    <button type="submit">Send</button>
+
+    <div class="input-row">
+      <div class="input-with-clip">
+        <input type="text" id="msgInput" placeholder="Type a message..." required>
+        <label for="fileInput" class="clip-icon chat-clip">📎</label>
+      </div>
+      <button type="submit">Send</button>
+    </div>
+    <input type="file" accept="image/*" name="image" id="fileInput">
   </form>
 </div>
 
@@ -35,21 +51,56 @@
 
   socket.emit("joinRoom", { sender, receiver });
 
+  // socket.on("newMessage", (msg) => {
+  //   const li = document.createElement("li");
+  //   li.innerHTML = `<strong>${msg.sender}:</strong> ${msg.content} <small>(${new Date(msg.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})</small>`;
+  //   messages.appendChild(li);
+  //   messages.scrollTop = messages.scrollHeight;
+  // });
   socket.on("newMessage", (msg) => {
-    const li = document.createElement("li");
-    li.innerHTML = `<strong>${msg.sender}:</strong> ${msg.content} <small>(${new Date(msg.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})</small>`;
-    messages.appendChild(li);
-    messages.scrollTop = messages.scrollHeight;
-  });
+  const li = document.createElement("li");
+  li.innerHTML = `<strong>${msg.sender}:</strong> ${
+    msg.hasImage ? `<br><img class="attachment" src="/chats/${msg.id}" width="30%">` : ""
+  } ${msg.content || ""}
+  <small>(${new Date(msg.sent_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })})</small>`;
+  messages.appendChild(li);
+  messages.scrollTop = messages.scrollHeight;
+});
 
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const content = msgInput.value.trim();
-    if (content) {
-      socket.emit("sendMessage", { sender, receiver, content });
+  // form.addEventListener("submit", (e) => {
+  //   e.preventDefault();
+  //   const content = msgInput.value.trim();
+  //   if (content) {
+  //     socket.emit("sendMessage", { sender, receiver, content });
+  //     msgInput.value = "";
+  //   }
+  // });
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const content = msgInput.value.trim();
+  const fileInput = document.getElementById("fileInput");
+  const file = fileInput.files[0];
+
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64Data = reader.result.split(",")[1]; // strip the data URL header
+      socket.emit("sendMessage", {
+        sender,
+        receiver,
+        content,
+        image: base64Data,
+        mimetype: file.type
+      });
       msgInput.value = "";
-    }
-  });
+      fileInput.value = "";
+    };
+    reader.readAsDataURL(file);
+  } else if (content) {
+    socket.emit("sendMessage", { sender, receiver, content });
+    msgInput.value = "";
+  }
+});
 </script>
-
 <%- include("partials/footer.ejs") %>

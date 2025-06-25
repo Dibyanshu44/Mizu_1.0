@@ -125,11 +125,18 @@ app.get("/comments/:id",async(req,res)=>{
   res.send(post.file);
 });
 
+app.get("/chats/:id",async(req,res)=>{
+  const attachment=await pool.query("select file,mimetype from messages where id=$1",[req.params.id]);
+  const post=attachment.rows[0];
+  res.set("Content-type",post.mimetype);
+  res.send(post.file);
+});
+
 app.post("/chat", async (req, res) => {
   const { sender, receiver, content } = req.body;
   await pool.query(
-    "INSERT INTO messages(sender, receiver, content) VALUES ($1, $2, $3)",
-    [sender, receiver, content]
+    "INSERT INTO messages(sender, receiver, content, file, mimetype) VALUES ($1, $2, $3, $4, $5)",
+    [sender, receiver, content, req.file.buffer, req.file.mimetype]
   );
   res.redirect(`/chat?user=${sender}&with=${receiver}`);
 });
@@ -147,11 +154,34 @@ io.on("connection", (socket) => {
     socket.join(room);
   });
 
-  socket.on("sendMessage", async ({ sender, receiver, content }) => {
-    const room = [sender, receiver].sort().join("-");
-    await pool.query("INSERT INTO messages(sender, receiver, content) VALUES ($1, $2, $3)", [sender, receiver, content]);
-    io.to(room).emit("newMessage", { sender, content, sent_at: new Date() });
-  });
+  socket.on("sendMessage", async ({ sender, receiver, content, image, mimetype }) => {
+  const room = [sender, receiver].sort().join("-");
+
+  let result;
+  if (image) {
+    const buffer = Buffer.from(image, 'base64');
+    result = await pool.query(
+      "INSERT INTO messages(sender, receiver, content, file, mimetype) VALUES ($1, $2, $3, $4, $5) RETURNING id, sent_at",
+      [sender, receiver, content || "", buffer, mimetype]
+    );
+  } else {
+    result = await pool.query(
+      "INSERT INTO messages(sender, receiver, content) VALUES ($1, $2, $3) RETURNING id, sent_at",
+      [sender, receiver, content]
+    );
+  }
+
+  const message = {
+    sender,
+    content,
+    sent_at: result.rows[0].sent_at,
+    id: result.rows[0].id,
+    hasImage: !!image
+  };
+
+  io.to(room).emit("newMessage", message);
+});
+
 });
 
 app.post("/logout", (req, res) => {
@@ -221,7 +251,11 @@ app.get("/view-image/:type/:id", async (req, res) => {
     type="file";
   } else if (type === "comment") {
     imageQuery = "SELECT file, mimetype, content FROM comments WHERE id = $1";
-  } else {
+  }
+  else if (type === "chat") {
+    imageQuery = "SELECT file, mimetype, content FROM messages WHERE id = $1";
+  }
+  else {
     return res.status(400).send("Invalid image type.");
   }
 
