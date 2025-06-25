@@ -132,7 +132,7 @@ app.get("/chats/:id",async(req,res)=>{
   res.send(post.file);
 });
 
-app.post("/chat", async (req, res) => {
+app.post("/chat", upload.single("image"),async (req, res) => {
   const { sender, receiver, content } = req.body;
   await pool.query(
     "INSERT INTO messages(sender, receiver, content, file, mimetype) VALUES ($1, $2, $3, $4, $5)",
